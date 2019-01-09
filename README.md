@@ -15,20 +15,20 @@ By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be abl
 
 * Access to the ACL 303 Academy, which gives you access to the ACL 303 1-6 Data.zip data file: https://academy.acl.com/learner/courseinfo/id:325 
 
-## Situation: Sending a cleaned dataset to R from ACL
+## Situation: Analyzing call logs and the length of these calls
 
 
 
 ## Instructions
-### Step 1: Within R, save the model
+### Step 1: ACL Analytics - prepare the data
 
-### Step 2: Within ACL Analytics, import testing data set
+### Step 2: R - Scale
 
-### Step 3: Within R, create the function that ACL will use to call for a prediction
+### Step 3: R - Create clusters
 
-### Step 4: Within R, test the function
+### Step 4: R - Save centers for future use
 
-### Step 5: Within ACL Analytics, create the formula that calls the R script
+### Step 5: ACL - Reusing the centers
 
 ## What's next?
 
