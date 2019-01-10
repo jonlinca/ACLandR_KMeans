@@ -4,7 +4,7 @@
 
 Finding patterns within a dataset is challenging, as it generally lacks labelled data, let alone any sort of discerable patterns. Unsupervised learning algoritms are powerful, exploratory tools that may help shed some light on patterns that may not be obvious on the surface.
 
-With ACL v14 and the introduction of the CLUSTER command, this enables audit practitioners to leverage a machine learning tools to further examine datasets prior to analysis.
+With ACL v14 and the introduction of the CLUSTER command, this enables audit practitioners to leverage a machine learning tool to further examine datasets to find potential patterns as part of their analysis.
 
 This tutorial will briefly touch on what K-means is doing, as well as showing you how to execute the equivalent outside of ACL, but retain those results in R.
 
@@ -24,11 +24,13 @@ By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be abl
 
 ### Step 2: R - Scale
 
-### Step 3: R - Create clusters
+### Step 3: R - Create and save clusters
 
-### Step 4: R - Save centers for future use
+** What about the centers? **
 
-### Step 5: ACL - Reusing the centers
+### Step 4: R - Understanding cluster assignments
+
+### Step 5: ACL Analytics - Creating tests based on these cluster assignments
 
 ## What's next?
 
