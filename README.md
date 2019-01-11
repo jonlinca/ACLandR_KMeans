@@ -202,9 +202,10 @@ Now that you have each phone number and its assigned clusters, you can join it b
 
 Feature engineering - Could you additional features to compliment your data? Example: Identify which calls are within North America and International? Does adding this information make your groupings more clear and distinct?
 
-Now that you know how to implement one unsupervised algorithm, there are several more out there. Each one will group data differently (distance-based, density-based), so there are several options to experiement, but the way you want to approach each of them is fundamentally similar.
+Other clustering algorithms - Now that you know how to implement one unsupervised algorithm, there are several more out there. Each one will group data differently (distance-based, density-based), so there are several options to experiement, but the way you want to approach each of them is fundamentally similar.
 
 ** What about the centers that are created with Kmeans? **
 You may have keenly observed that the kmeans model also returns *centers* (if you run this in R, it shows up as a matrix under the kmeans_df object). While you may be tempted to create an ACL procedure by comparing how far a new 'phone number' is away from these centers for a future grouping, it won't be relevant as the kmeans is ran based on the scale of the data it was ran on. Each time you run the K-means algorithm, it will change the scale and centers as a result.
 
 ## Troubleshooting
+```Error occured when converting file``` - In progress of investigating
