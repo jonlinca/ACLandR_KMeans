@@ -61,7 +61,9 @@ OPEN B01_Summ_Number_Minutes_Amount
 DELETE FIELD COUNT OK
 ```
 
-At the end of step 1, we will have an summarized list of *Number_Dialed*, aggregated by *minutes_billed* and *amount*. Observe that *Number_Dialed* is a character, while *minutes_billed* and *amount* are numeric data types. 
+At the end of step 1, we will have an summarized list of *Number_Dialed*, aggregated by *minutes_billed* and *amount*. Observe that *Number_Dialed* is a character, while *minutes_billed* and *amount* are numeric data types. If you were to perform a scatterplot of the data, it may look like this:
+
+![Scatterplot of minutes billed and amount, by number dialed](early_scatterplot.png?raw=true)
 
 We are now ready to pass a series of ACL .FIL data tables to R to process our data. While you could combine the next several R scripts into one, its important to understand why we're doing each step.
 
