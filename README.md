@@ -108,6 +108,8 @@ The elbow method essentially simulates multiple k-means clustering models, and t
 
 The below script creates an empty vector to hold our values, and then simulates a number of clusters between 2 and 15. We return this to ACL, but also list the amount of information gain between each cluster to help us decide.
 
+Save the below script into **acl_elbow.R**.
+
 ```{r}
 df <- acl.readData()
 
@@ -162,6 +164,8 @@ For our analysis here, I've chosen 4 as the number of clusters we will want to r
 
 We've chosen four clusters in our analysis, and now we want to know where each phone number dialed, along with amount and call duration, should be grouped together. We will run K-Means one more time, and this time we will assign each phone number to a cluster. 
 
+Save the below into **acl_assignCluster.R**
+
 ```
 # Imports the data from RCOMMAND
 df <- acl.readData()
@@ -187,7 +191,7 @@ Again, call this from ACL to get our final result.
 COMMENT
 Call and store KMeans cluster assignment
 
-RCOMMAND FIELDS amount TO "B04_AssignClusters" RSCRIPT "acltest.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
+RCOMMAND FIELDS amount TO "B04_AssignClusters" RSCRIPT "acl_assignCluster.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
 ### Step 5: ACL Analytics - Creating data subset and tests based on these cluster assignments
@@ -196,7 +200,9 @@ This will allow us to subset each cluster and examine them together, to see if t
 
 ## What's next?
 
-** What about the centers? **
+Now that you know how to implement one unsupervised algorithm, there are several more out there. Each one will group data differently (distance-based, density-based), so there are several options to experiement, but the way you want to approach each of them is fundamentally similar.
+
+** What about the centers that are created with Kmeans? **
 You may have keenly observed that the kmeans model also returns *centers* (if you run this in R, it shows up as a matrix under the kmeans_df object). While you may be tempted to create an ACL procedure by comparing how far a new 'phone number' is away from these centers for a future grouping, it won't be relevant as the kmeans is ran based on the scale of the data it was ran on. Each time you run the kmeans algorithm, it will change the scale and centers as a result.
 
 ## Troubleshooting
