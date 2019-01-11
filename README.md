@@ -9,7 +9,7 @@ With ACL v14 and the introduction of the CLUSTER command, this enables audit pra
 This tutorial will briefly touch on what K-means is doing, as well as showing you how to execute the equivalent outside of ACL, but retain those results in R.
 
 **Why is this important?** 
-By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be able to assign clusters to your data using any unsupervised method of labelling of your choosing, empowering you to use the best algorithm for your needs (since there is no such thing as a free lunch).
+By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be able to assign clusters to your data using any unsupervised method of labelling of your choosing, empowering you to use the best algorithm for your needs (there is no such thing as a "free lunch").
 
 ## Pre-requisites
 
@@ -89,7 +89,7 @@ df <- scale(df[,-1])
 acl.output <- as.data.frame(df)
 ```
 
-This will allow us to return a new table into ACL. In fact, running the below in ACL will create a table with scaled data, using 
+This will allow us to return a new table into ACL. In fact, running the below in ACL will create a table with scaled data, using the script we just created.
 
 ```{acl}
 COMMENT
@@ -98,24 +98,105 @@ Call and store KMeans cluster assignment
 RCOMMAND FIELDS amount TO "B02_ScaledData" RSCRIPT "acl_centre.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
-### Step 3: R - Elbow method to determine number of centers
+### Step 3: R - Determine number of centers
 
+Before we cluster, we need to target the number of centers we want to create (i.e. the number of clusters). The goal of the task is to optimize the amount of error with each one of our clusters. A secondary objective is the number of clusters should help assist us in interpreting what is potentially meaningful. A simple model with 2 clusters may given more insight than a complex model with 15 clusters.
 
-### Step 3: ACL - Call the cluster assignment
+There are several clustering methods, and it is up to the practitioner to decide what is most reasonable for their case. The Elbow method is a straight-forward approach, and is one of many. Read here for more information: https://en.wikipedia.org/wiki/Determining_the_number_of_clusters_in_a_data_set
 
+The elbow method essentially simulates multiple k-means clustering models, and then tells you which one gives you the most 'bang for the buck'. The downside with the Elbow method is that it doesn't authoratively prescribe the optimal number of clusters are - you need to understand your data to see what number of clusters could make sense to you.
+
+The below script creates an empty vector to hold our values, and then simulates a number of clusters between 2 and 15. We return this to ACL, but also list the amount of information gain between each cluster to help us decide.
+
+```{r}
+df <- acl.readData()
+
+# Reinforce that our first column is a character column, and isn't going to be analyzed or scaled.
+df[,1] <- as.character(df[,1])
+
+# First, establish a vector to hold all values.
+clusters_sumSquares <- rep(0.0, 14)
+
+# Number of times to run the clustering algorithm
+cluster_num <- 2:15
+
+# Control the randomness
+set.seed(1)
+
+# Using cluster params, 
+for (i in cluster_num) {
+  
+  # Cluster data using K-means with the current value of i.
+  kmeans_temp <- kmeans(df, centers = i)
+  
+  # Get the sum of squared for all point and cluster assignments
+  # Save this as a data vector
+  clusters_sumSquares[i - 1] <- sum(kmeans_temp$withinss)
+}   
+
+# determine the infromation gain from each cluster
+diffError <- diff(clusters_sumSquares)
+diffError <- append(0, diffError) #there is no gain on the first simulation
+
+# Combine these all together and throw back to ACL
+df <- cbind(cluster_params, clusters_sumSquares, diffError)
+
+acl.output <- df
+```
+
+Of course, calling this from ACL couldn't be easier.
+
+```{acl}
+COMMENT
+Call and store KMeans cluster assignment
+
+OPEN B02_ScaledData
+RCOMMAND FIELDS amount TO "B03_ElbowErrors" RSCRIPT "acl_elbow.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
+```
+
+We can now inspect the data - we get cluster_params (the number of clusters ran), the clusters_sumSquares (the amount of error), and diffError (the error reduced between each cluster ran).
+
+For our analysis here, I've chosen 4 as the number of clusters we will want to run for our analysis.
+
+### Step 4: ACL - Assign the clusters
+
+We've chosen four clusters in our analysis, and now we want to know where each phone number dialed, along with amount and call duration, should be grouped together. We will run K-Means one more time, and this time we will assign each phone number to a cluster. 
+
+```
+# Imports the data from RCOMMAND
+df <- acl.readData()
+
+# Saves the first column as a character column, that we won't perform additional analysis on
+df[,1] <- as.character(df[,1])
+
+# Manually specify the number of clusters
+centersVal <- 4
+
+set.seed(1)
+kmeans_df <- as.data.frame(scale(df[,-1])) # Remove the first column
+kmeans_df <- kmeans(df, centers = centersVal)
+
+# Append the cluster number back to the df, which gets returned to ACL
+df$cluster <- kmeans_df$cluster
+
+acl.output <- df
+```
+
+Again, call this from ACL to get our final result.
 ```
 COMMENT
 Call and store KMeans cluster assignment
 
-RCOMMAND FIELDS amount TO "B02_AssignClusters" RSCRIPT "acltest.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
+RCOMMAND FIELDS amount TO "B04_AssignClusters" RSCRIPT "acltest.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
-### Step 4: R - Understanding cluster assignments
+### Step 5: ACL Analytics - Creating data subset and tests based on these cluster assignments
 
-### Step 5: ACL Analytics - Creating tests based on these cluster assignments
+This will allow us to subset each cluster and examine them together, to see if there are any further underlying trends we did not notice on the surface. 
 
 ## What's next?
 
 ** What about the centers? **
+You may have keenly observed that the kmeans model also returns *centers* (if you run this in R, it shows up as a matrix under the kmeans_df object). While you may be tempted to create an ACL procedure by comparing how far a new 'phone number' is away from these centers for a future grouping, it won't be relevant as the kmeans is ran based on the scale of the data it was ran on. Each time you run the kmeans algorithm, it will change the scale and centers as a result.
 
 ## Troubleshooting
