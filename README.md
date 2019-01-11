@@ -19,13 +19,13 @@ By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be abl
 
 Within PBX_Q1_Phonebill.xlsx, this spreadsheet contains the following information:
 
-* CallDateTime - The date and time of a call
-* Extension - The local number the call was made from/to
-* Minutes_Billed - The duration of the call
-* Number_Dialed - The destination of the outbound call (or source of an inbound call)
-* Amount_August - The amount billed for the month of August
-* Amount_September - The amount billed for the month of September
-* Amount_October - The amount billed for the month of October
+* *CallDateTime* - The date and time of a call
+* *Extension* - The local number the call was made from/to
+* *Minutes_Billed* - The duration of the call
+* *Number_Dialed* - The destination of the outbound call (or source of an inbound call)
+* *Amount_August* - The amount billed for the month of August
+* *Amount_September* - The amount billed for the month of September
+* *Amount_October* - The amount billed for the month of October
 
 We want to trend the dollars billed and the amounts charged and see if there are any potential groupings within the dataset. This may help guide our examination of the data.
 
@@ -34,10 +34,10 @@ We want to trend the dollars billed and the amounts charged and see if there are
 
 To use K-means, the values we want to use must be numeric. In this case, the features we want to compare will be:
 
-* Minutes_Billed
-* Amount = Amount_August + Amount_September + Amount_October
+* *Minutes_Billed*
+* *Amount = Amount_August + Amount_September + Amount_October*
 
-We will create an clean, yet unprocessed dataframe that can be sent into R. First, lets create a new ACL Project, and then use the following script to import data. Remember to download the data from ACL 303 into the same folder before continuing.
+We will create an clean yet unprocessed dataframe that can be sent into R. Lets create a new ACL Project, and then use the following script to import data. Remember to download the data from ACL 303 into the same folder before continuing.
 
 ```
 SET SAFETY OFF
@@ -61,9 +61,9 @@ OPEN B01_Summ_Number_Minutes_Amount
 DELETE FIELD COUNT OK
 ```
 
-At the end of step 1, we will have an summarized list of Number_Dialed, aggregated by minutes_billed and amount. Observe that Number_Dialed is a character, while minutes_billed and amount are our numeric data types. 
+At the end of step 1, we will have an summarized list of *Number_Dialed*, aggregated by *minutes_billed* and *amount*. Observe that *Number_Dialed* is a character, while *minutes_billed* and *amount* are numeric data types. 
 
-We are now ready to pass a series of ACL .FIL data tables to R to process our data. While you could combine the next several steps into one, its important to understand why we're doing each step.
+We are now ready to pass a series of ACL .FIL data tables to R to process our data. While you could combine the next several R scripts into one, its important to understand why we're doing each step.
 
 ### Step 2: R - Scale the data
 
@@ -156,13 +156,13 @@ OPEN B02_ScaledData
 RCOMMAND FIELDS amount TO "B03_ElbowErrors" RSCRIPT "acl_elbow.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
-We can now inspect the data - we get cluster_params (the number of clusters ran), the clusters_sumSquares (the amount of error), and diffError (the error reduced between each cluster ran).
+We can now inspect the data - we get *cluster_params* (the number of clusters ran), the *clusters_sumSquares* (the amount of error), and *diffError* (the error reduced between each cluster ran).
 
-For our analysis here, I've chosen 4 as the number of clusters we will want to run for our analysis.
+For our analysis here, I've chosen 4 as the number of clusters we will want to run for our analysis. Four clusters seems to have the biggest bang for buck, and since we only have two variables we're analyzing, seems like a reasonable segment.
 
 ### Step 4: ACL - Assign the clusters
 
-We've chosen four clusters in our analysis, and now we want to know where each phone number dialed, along with amount and call duration, should be grouped together. We will run K-means one more time, and this time we will assign each phone number to a cluster. 
+As we've chosen four clusters in our analysis, now we want to know where each phone number dialed, along with amount and call duration, should be grouped together. We will run K-means one more time, but this time we will assign each phone number to a cluster. 
 
 Save the below into **acl_assignCluster.R**
 
@@ -196,9 +196,11 @@ RCOMMAND FIELDS amount TO "B04_AssignClusters" RSCRIPT "acl_assignCluster.R" KEE
 
 ### Step 5: ACL Analytics - Creating data subset and tests based on these cluster assignments
 
-This will allow us to subset each cluster and examine them together, to see if there are any further underlying trends we did not notice on the surface. 
+Now that you have each phone number and its assigned clusters, you can join it back with your starting dataset. The grunt work now comes into understanding why did each phone number fall into a cluster, and looking for additional patterns or simply auditing these as samples to seek more information.
 
 ## What's next?
+
+Feature engineering - Could you additional features to compliment your data? Example: Identify which calls are within North America and International? Does adding this information make your groupings more clear and distinct?
 
 Now that you know how to implement one unsupervised algorithm, there are several more out there. Each one will group data differently (distance-based, density-based), so there are several options to experiement, but the way you want to approach each of them is fundamentally similar.
 
