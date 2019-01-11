@@ -156,7 +156,9 @@ OPEN B02_ScaledData
 RCOMMAND FIELDS amount TO "B03_ElbowErrors" RSCRIPT "acl_elbow.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
-We can now inspect the data - we get *cluster_params* (the number of clusters ran), the *clusters_sumSquares* (the amount of error), and *diffError* (the error reduced between each cluster ran).
+We can now inspect the data - we get *cluster_params* (the number of clusters ran), the *clusters_sumSquares* (the amount of error), and *diffError* (the error reduced between each cluster ran). The below is a visual of the plot of the number of clusters and the corresponding error amount
+
+![Scree Plot example of errors](screeplot.png?raw=true)
 
 For our analysis here, I've chosen 4 as the number of clusters we will want to run for our analysis. Four clusters seems to have the biggest bang for buck, and since we only have two variables we're analyzing, seems like a reasonable segment.
 
@@ -195,6 +197,8 @@ RCOMMAND FIELDS amount TO "B04_AssignClusters" RSCRIPT "acl_assignCluster.R" KEE
 ```
 
 ### Step 5: ACL Analytics - Creating data subset and tests based on these cluster assignments
+
+![Example of the cluster assignments](clustersplot.png?raw=true)
 
 Now that you have each phone number and its assigned clusters, you can join it back with your starting dataset. The grunt work now comes into understanding why did each phone number fall into a cluster, and looking for additional patterns or simply auditing these as samples to seek more information.
 
