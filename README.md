@@ -15,16 +15,28 @@ By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be abl
 
 * Access to the ACL 303 Academy, which gives you access to the ACL 303 1-6 Data.zip data file: https://academy.acl.com/learner/courseinfo/id:325 
 
-## Situation: Analyzing call logs and the length of these calls
+## Situation: Analyzing call logs for the time length and cost of calls
 
+Within PBX_Q1_Phonebill.xlsx, there is a spreadsheet that contains the following information:
 
+* CallDateTime - The date and time of a call
+* Extension - The local number the call was made from/to
+* Minutes_Billed - The duration of the call
+* Number_Dialed - The destination of the outbound call (or source of an inbound call)
+* Amount_August - The amount billed for the month of August
+* Amount_September - The amount billed for the month of September
+* Amount_October - The amount billed for the month of October
+
+We want to trend the values and see if there are any potential groupings within the dataset. This may help guide our examination of the data.
 
 ## Instructions
 ### Step 1: ACL Analytics - prepare the data
 
+To use K-Means, the values we want to use must be numeric and scaled. 
+
 ### Step 2: R - Scale
 
-### Step 3: R - Create and save clusters
+### Step 3: R - Create and save cluster assignments
 
 ** What about the centers? **
 
