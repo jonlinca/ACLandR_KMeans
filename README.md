@@ -2,14 +2,14 @@
 
 ## Background
 
-Finding patterns within a dataset is challenging, as it generally lacks labelled data, let alone any sort of discerable patterns. Unsupervised learning algoritms are powerful, exploratory tools that may help shed some light on patterns that may not be obvious on the surface.
+Unsupervised learning algoritms are powerful, exploratory tools that may help shed some light on patterns that may not be obvious on the surface. Finding patterns within an unlabelled dataset is already challenging enough, let alone trying to verbalize a sort of grouping associated with it.
 
-With ACL v14 and the introduction of the CLUSTER command, this enables audit practitioners to leverage a machine learning tool to further examine datasets to find potential patterns as part of their analysis.
+With ACL v14, the introduction of the ```CLUSTER``` command enables audit practitioners to leverage a machine learning tool to further examine datasets to find potential patterns as part of their analysis.
 
 This tutorial will briefly touch on what K-means is doing, as well as showing you how to execute the equivalent outside of ACL, but retain those results in R.
 
 **Why is this important?** 
-By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be able to assign clusters to your data using any unsupervised method of labelling of your choosing, empowering you to use the best algorithm for your needs (there is no such thing as a "free lunch").
+By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be able to assign clusters to your data using any unsupervised method of labelling of your choosing, empowering you to use the best algorithm for your needs.
 
 ## Pre-requisites
 
@@ -17,7 +17,7 @@ By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be abl
 
 ## Situation: Analyzing call logs for the time length and cost of calls
 
-Within PBX_Q1_Phonebill.xlsx, there is a spreadsheet that contains the following information:
+Within PBX_Q1_Phonebill.xlsx, this spreadsheet contains the following information:
 
 * CallDateTime - The date and time of a call
 * Extension - The local number the call was made from/to
@@ -32,7 +32,7 @@ We want to trend the dollars billed and the amounts charged and see if there are
 ## Instructions
 ### Step 1: ACL Analytics - prepare the data
 
-To use K-Means, the values we want to use must be numeric. In this case, the features we want to compare will be:
+To use K-means, the values we want to use must be numeric. In this case, the features we want to compare will be:
 
 * Minutes_Billed
 * Amount = Amount_August + Amount_September + Amount_October
@@ -93,7 +93,7 @@ This will allow us to return a new table into ACL. In fact, running the below in
 
 ```{acl}
 COMMENT
-Call and store KMeans cluster assignment
+Call and store K-Means cluster assignment
 
 RCOMMAND FIELDS amount TO "B02_ScaledData" RSCRIPT "acl_centre.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
@@ -131,9 +131,9 @@ for (i in cluster_num) {
   # Cluster data using K-means with the current value of i.
   kmeans_temp <- kmeans(df, centers = i)
   
-  # Get the sum of squared for all point and cluster assignments
+  # Get the total sum of squared for all point and cluster assignments
   # Save this as a data vector
-  clusters_sumSquares[i - 1] <- sum(kmeans_temp$withinss)
+  clusters_sumSquares[i - 1] <- kmeans_temp$tot.withinss
 }   
 
 # determine the infromation gain from each cluster
@@ -162,7 +162,7 @@ For our analysis here, I've chosen 4 as the number of clusters we will want to r
 
 ### Step 4: ACL - Assign the clusters
 
-We've chosen four clusters in our analysis, and now we want to know where each phone number dialed, along with amount and call duration, should be grouped together. We will run K-Means one more time, and this time we will assign each phone number to a cluster. 
+We've chosen four clusters in our analysis, and now we want to know where each phone number dialed, along with amount and call duration, should be grouped together. We will run K-means one more time, and this time we will assign each phone number to a cluster. 
 
 Save the below into **acl_assignCluster.R**
 
@@ -203,6 +203,6 @@ This will allow us to subset each cluster and examine them together, to see if t
 Now that you know how to implement one unsupervised algorithm, there are several more out there. Each one will group data differently (distance-based, density-based), so there are several options to experiement, but the way you want to approach each of them is fundamentally similar.
 
 ** What about the centers that are created with Kmeans? **
-You may have keenly observed that the kmeans model also returns *centers* (if you run this in R, it shows up as a matrix under the kmeans_df object). While you may be tempted to create an ACL procedure by comparing how far a new 'phone number' is away from these centers for a future grouping, it won't be relevant as the kmeans is ran based on the scale of the data it was ran on. Each time you run the kmeans algorithm, it will change the scale and centers as a result.
+You may have keenly observed that the kmeans model also returns *centers* (if you run this in R, it shows up as a matrix under the kmeans_df object). While you may be tempted to create an ACL procedure by comparing how far a new 'phone number' is away from these centers for a future grouping, it won't be relevant as the kmeans is ran based on the scale of the data it was ran on. Each time you run the K-means algorithm, it will change the scale and centers as a result.
 
 ## Troubleshooting
