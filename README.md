@@ -75,27 +75,33 @@ For example:
 * A change in one kilometer is different than a change in one mile.
 * A change in one dollar is not directly relatable to a change in one kilometer.
 
-Lets create and save the following Rscript, **acl_centre.R**, into the same folder as our ACL project folder. We expect to call this script with an ```RCOMMAND```, which means we need to accomodate the use of *acl.readData()* function and *acl.output* object.
+Lets create and save the following Rscript, **acl_scale.R**, into the same folder as our ACL project folder. We expect to call this script with an ```RCOMMAND```, which means we need to accomodate the use of *acl.readData()* function and *acl.output* object.
 
 ```{r}
 # Read in ACL data
-df <- acl.readData()
+original_data <- acl.readData()
 
 # Reinforce that our first column is a character column, and isn't going to be analyzed or scaled.
-df[,1] <- as.character(df[,1])
+original_data[,1] <- as.character(original_data[,1])
+firstColID <- names(original_data)[1]
 
-# Scale all columns excluding the first column
-df <- scale(df[,-1])
+# Scale everything but the first column and save it as a data frame
+# Do this as the scaled returned data type isn't going to work when you cbind it
+scaled_data <- as.data.frame(scale(original_data[,-1])) 
+
+# Preserve the first column name and header
+scaled_data <- cbind(original_data[,1],scaled_data)
+colnames(scaled_data)[1] <- firstColID
 
 # Return data to ACL
-acl.output <- as.data.frame(df)
+acl.output <- as.data.frame(scaled_data)
 ```
 
 This will allow us to return a new table into ACL. In fact, running the below in ACL will create a table with scaled data, using the script we just created.
 
 ```{acl}
 COMMENT
-Call and store K-Means cluster assignment
+Call and store centered data
 
 RCOMMAND FIELDS amount TO "B02_ScaledData" RSCRIPT "acl_centre.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
@@ -113,10 +119,10 @@ The below script creates an empty vector to hold our values, and then simulates 
 Save the below script into **acl_elbow.R**.
 
 ```{r}
-df <- acl.readData()
+scaled_data <- acl.readData()
 
 # Reinforce that our first column is a character column, and isn't going to be analyzed or scaled.
-df[,1] <- as.character(df[,1])
+scaled_data[,1] <- as.character(scaled_data[,1])
 
 # First, establish a vector to hold all values.
 clusters_sumSquares <- rep(0.0, 14)
@@ -131,9 +137,9 @@ set.seed(1)
 for (i in cluster_num) {
   
   # Cluster data using K-means with the current value of i.
-  kmeans_temp <- kmeans(df, centers = i)
+  kmeans_temp <- kmeans(scaled_data, centers = i)
   
-  # Get the total sum of squared for all point and cluster assignments
+  # Get the sum of squared for all point and cluster assignments
   # Save this as a data vector
   clusters_sumSquares[i - 1] <- kmeans_temp$tot.withinss
 }   
@@ -143,9 +149,9 @@ diffError <- diff(clusters_sumSquares)
 diffError <- append(0, diffError) #there is no gain on the first simulation
 
 # Combine these all together and throw back to ACL
-df <- cbind(cluster_params, clusters_sumSquares, diffError)
+elbow_data <- cbind(cluster_num, clusters_sumSquares, diffError)
 
-acl.output <- df
+acl.output <- elbow_data
 ```
 
 Of course, calling this from ACL couldn't be easier.
@@ -168,33 +174,35 @@ For our analysis here, I've chosen 4 as the number of clusters we will want to r
 
 As we've chosen four clusters in our analysis, now we want to know where each phone number dialed, along with amount and call duration, should be grouped together. We will run K-means one more time, but this time we will assign each phone number to a cluster. 
 
-Save the below into **acl_assignCluster.R**
+Save the below into **acl_assignCluster.R**. If you like, you can change the centersVal value to indicate the number of clusters that you would like to assign
 
 ```
 # Imports the data from RCOMMAND
-df <- acl.readData()
+scaled_data <- acl.readData()
 
-# Saves the first column as a character column, that we won't perform additional analysis on
-df[,1] <- as.character(df[,1])
+# Reinforce that our first column is a character column, and isn't going to be analyzed or scaled.
+scaled_data[,1] <- as.character(scaled_data[,1])
+firstColID <- names(scaled_data)[1]
 
 # Manually specify the number of clusters
 centersVal <- 4
 
 set.seed(1)
-kmeans_df <- as.data.frame(scale(df[,-1])) # Remove the first column
-kmeans_df <- kmeans(df, centers = centersVal)
+kmeans_df <- as.data.frame(scaled_data[,-1]) # Remove the first column
+kmeans_df <- kmeans(scaled_data, centers = centersVal)
 
 # Append the cluster number back to the df, which gets returned to ACL
-df$cluster <- kmeans_df$cluster
+scaled_data$cluster <- kmeans_df$cluster
 
-acl.output <- df
+acl.output <- scaled_data
 ```
 
 Again, call this from ACL to get our final result.
 ```
 COMMENT
-Call and store KMeans cluster assignment
+Call and store KMeans cluster assignment from our scaled data
 
+OPEN B02_ScaledData
 RCOMMAND FIELDS amount TO "B04_AssignClusters" RSCRIPT "acl_assignCluster.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
