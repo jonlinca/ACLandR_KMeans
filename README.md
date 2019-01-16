@@ -1,4 +1,4 @@
-# Tutorial: Unsupervised Learning with ACL Analtyics
+# Tutorial: Unsupervised Learning with ACL Analytics & R
 
 ## Background
 
