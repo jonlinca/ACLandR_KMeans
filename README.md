@@ -40,6 +40,10 @@ To use K-means, the values we want to use must be numeric. In this case, the fea
 We will create an clean yet unprocessed dataframe that can be sent into R. Lets create a new ACL Project, and then use the following script to import data. Remember to download the data from ACL 303 into the same folder before continuing.
 
 ```
+COMMENT
+Phonebill Example
+Author: Jonathan Lin, 2019-01-09
+
 SET SAFETY OFF
 
 COMMENT
@@ -75,7 +79,7 @@ For example:
 * A change in one kilometer is different than a change in one mile.
 * A change in one dollar is not directly relatable to a change in one kilometer.
 
-Lets create and save the following Rscript, **acl_scale.R**, into the same folder as our ACL project folder. We expect to call this script with an ```RCOMMAND```, which means we need to accomodate the use of *acl.readData()* function and *acl.output* object.
+Lets create and save the following Rscript, **acl_1_scale.R**, into the same folder as our ACL project folder. We expect to call this script with an ```RCOMMAND```, which means we need to accomodate the use of *acl.readData()* function and *acl.output* object.
 
 ```{r}
 # Read in ACL data
@@ -101,9 +105,10 @@ This will allow us to return a new table into ACL. In fact, running the below in
 
 ```{acl}
 COMMENT
-Call and store centered data
+Perform scaling using R
 
-RCOMMAND FIELDS amount TO "B02_ScaledData" RSCRIPT "acl_centre.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
+OPEN B01_Summ_Number_Minutes_Amount
+RCOMMAND FIELDS Number_Dialed minutes_billed amount TO "B02_ScaledData" RSCRIPT "acl_1_scale.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
 ### Step 3: R - Determine number of centers
@@ -116,7 +121,7 @@ The elbow method essentially simulates multiple k-means clustering models, and t
 
 The below script creates an empty vector to hold our values, and then simulates a number of clusters between 2 and 15. We return this to ACL, but also list the amount of information gain between each cluster to help us decide.
 
-Save the below script into **acl_elbow.R**.
+Save the below script into **acl_2_elbow.R**.
 
 ```{r}
 scaled_data <- acl.readData()
@@ -158,10 +163,10 @@ Of course, calling this from ACL couldn't be easier.
 
 ```{acl}
 COMMENT
-Call and store KMeans cluster assignment
+Determine error rates with different numbers of clusters
 
 OPEN B02_ScaledData
-RCOMMAND FIELDS amount TO "B03_ElbowErrors" RSCRIPT "acl_elbow.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
+RCOMMAND FIELDS Number_Dialed minutes_billed amount TO "B03_ElbowErrors" RSCRIPT "acl_2_elbow.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
 We can now inspect the data - we get *cluster_params* (the number of clusters ran), the *clusters_sumSquares* (the amount of error), and *diffError* (the error reduced between each cluster ran). The below is a visual of the plot of the number of clusters and the corresponding error amount
@@ -174,36 +179,40 @@ For our analysis here, I've chosen 4 as the number of clusters we will want to r
 
 As we've chosen four clusters in our analysis, now we want to know where each phone number dialed, along with amount and call duration, should be grouped together. We will run K-means one more time, but this time we will assign each phone number to a cluster. 
 
-Save the below into **acl_assignCluster.R**. If you like, you can change the centersVal value to indicate the number of clusters that you would like to assign
+Save the below into **acl_3_assignCluster.R**. If you like, you can change the centersVal value to indicate the number of clusters that you would like to assign
 
 ```
 # Imports the data from RCOMMAND
 scaled_data <- acl.readData()
+clustered_data <- scaled_data # Create separate object for easier tracking
 
 # Reinforce that our first column is a character column, and isn't going to be analyzed or scaled.
-scaled_data[,1] <- as.character(scaled_data[,1])
-firstColID <- names(scaled_data)[1]
+clustered_data[,1] <- as.character(clustered_data[,1])
+firstColID <- names(clustered_data)[1]
 
 # Manually specify the number of clusters
 centersVal <- 4
 
 set.seed(1)
-kmeans_df <- as.data.frame(scaled_data[,-1]) # Remove the first column
-kmeans_df <- kmeans(scaled_data, centers = centersVal)
+kmeans_df <- as.data.frame(clustered_data[,-1]) # Remove the first column
+kmeans_df <- kmeans(clustered_data, centers = centersVal)
 
 # Append the cluster number back to the df, which gets returned to ACL
-scaled_data$cluster <- kmeans_df$cluster
+cluster_df <- as.data.frame(kmeans_df$cluster)
+colnames(cluster_df)[1] <- "cluster" # Preserve first column name
+clustered_data$cluster <- cluster_df$cluster
+colnames(clustered_data)[1] <- firstColID # Preserve first column name
 
-acl.output <- scaled_data
+acl.output <- clustered_data
 ```
 
 Again, call this from ACL to get our final result.
 ```
 COMMENT
-Call and store KMeans cluster assignment from our scaled data
+Store KMeans cluster assignment
 
 OPEN B02_ScaledData
-RCOMMAND FIELDS amount TO "B04_AssignClusters" RSCRIPT "acl_assignCluster.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
+RCOMMAND FIELDS Number_Dialed minutes_billed amount TO "B04_AssignClusters" RSCRIPT "acl_3_assignCluster.R" KEEPTITLE SEPARATOR "," QUALIFIER '"' OPEN
 ```
 
 ### Step 5: ACL Analytics - Creating data subset and tests based on these cluster assignments
@@ -224,4 +233,8 @@ Now that you know how to implement one unsupervised algorithm, there are several
 You may have keenly observed that the kmeans model also returns *centers* (if you run this in R, it shows up as a matrix under the kmeans_df object). While you may be tempted to create an ACL procedure by comparing how far a new 'phone number' is away from these centers for a future grouping, it won't be relevant as the kmeans is ran based on the scale of the data it was ran on. Each time you run the K-means algorithm, it will change the scale and centers as a result, rendering any prior centers generally useless.
 
 ## Troubleshooting
-```Error occured when converting file``` - In progress of investigating
+```Error occured when converting file``` - Means you're running ACL Unicode, which doesn't work with RCommand as well as it should quite yet. I'll remove this when ACL has deployed a bugfix.
+
+Other errors that I ran while creating this included:
+- Having *$* as field names in R that can't be transferred back into R. A diligent use of colnames will eliminate this risk.
+- Having two double fields not fully returning into ACL. My fix was to ensure a character column act as the first field.
