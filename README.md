@@ -6,7 +6,7 @@ Unsupervised learning algoritms are powerful, exploratory tools that may help sh
 
 With ACL v14, the introduction of the ```CLUSTER``` command enables audit practitioners to leverage a machine learning tool to further examine datasets to find potential patterns as part of their analysis.
 
-This tutorial will briefly touch on what K-means is doing, as well as showing you how to execute the equivalent outside of ACL, but retain those results in R.
+This tutorial will briefly touch on what K-means is doing, as well as showing you how to execute the equivalent in R, but retain the results in ACL.
 
 **Why is this important?** 
 By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be able to assign clusters to your data using any unsupervised method of labelling of your choosing, empowering you to use the best algorithm for your needs.
@@ -175,7 +175,7 @@ We can now inspect the data - we get *cluster_params* (the number of clusters ra
 
 ![Scree Plot example of errors](screeplot.png?raw=true)
 
-For our analysis here, I've chosen 4 as the number of clusters we will want to run for our analysis. Four clusters seems to have the biggest bang for buck, and since we only have two variables we're analyzing, seems like a reasonable segment.
+For our analysis here, I've chosen 4 as the number of clusters we will want to run for our analysis. Four clusters seems to have the biggest bang for buck, and since we only have two variables we're analyzing, seems like a reasonable segment. The number of clusters will depend on how many logical groups you think may be embedded in the data, which is also related to the number of features you may give the model to cluster.
 
 ### Step 4: ACL - Assign the clusters
 
