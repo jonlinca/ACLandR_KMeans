@@ -14,6 +14,8 @@ By understanding the fundamentals of using ACL's ```RCOMMAND```, you will be abl
 ## Pre-requisites
 
 * Access to the ACL 303 Academy, which gives you access to the ACL 303 1-6 Data.zip data file: https://academy.acl.com/learner/courseinfo/id:325 
+* Installing R, and also having a non-Unicode version of ACL (see Troubleshooting for more details).
+* Specifying the path of the version of R.exe directly into the PATH environment variable (through the Advanced System Settings in Windows)
 
 ## Situation: Analyzing call logs for the time length and cost of calls
 
