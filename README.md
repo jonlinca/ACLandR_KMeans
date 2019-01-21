@@ -2,7 +2,7 @@
 
 ## Background
 
-Unsupervised learning algoritms are powerful, exploratory tools that may help shed some light on patterns that may not be obvious on the surface. Finding patterns within an unlabelled dataset is already challenging enough, let alone trying to verbalize a sort of grouping associated with it.
+Unsupervised learning algorithms are powerful, exploratory tools that may help shed some light on patterns that may not be obvious on the surface. Finding patterns within an unlabelled dataset is already challenging enough, let alone trying to verbalize a sort of grouping associated with it.
 
 With ACL v14, the introduction of the ```CLUSTER``` command enables audit practitioners to leverage a machine learning tool to further examine datasets to find potential patterns as part of their analysis.
 
